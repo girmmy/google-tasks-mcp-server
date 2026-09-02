@@ -1,6 +1,6 @@
 {
   "name": "@girmmy/google-tasks-mcp-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "mcpName": "io.github.girmmy/google-tasks",
   "description": "MCP server for Google Tasks — list, create, update, complete, delete, and move tasks and task lists via the Google Tasks API",
   "author": "Girmachew Samson (https://github.com/girmmy)",

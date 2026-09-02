@@ -62,5 +62,24 @@ jobs:
           fi
           echo "version $PKG matches tag $GITHUB_REF_NAME"
 
+      # server.json carries the version twice, and the MCP Registry rejects a
+      # publish whose package version doesn't match what's on npm.
+      - name: Check server.json versions match package.json
+        run: |
+          node -e '
+            const pkg = require("./package.json").version;
+            const s = require("./server.json");
+            const bad = [];
+            if (s.version !== pkg) bad.push(`server.json version ${s.version}`);
+            for (const p of s.packages ?? []) {
+              if (p.version !== pkg) bad.push(`packages[${p.identifier}].version ${p.version}`);
+            }
+            if (bad.length) {
+              console.error(`package.json is ${pkg} but ` + bad.join(", "));
+              process.exit(1);
+            }
+            console.log(`server.json agrees with package.json (${pkg})`);
+          '
+
       - name: Publish
         run: npm publish

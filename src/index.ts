@@ -15,10 +15,17 @@ import { registerTaskTools } from "./tools/tasks.js";
 import { AuthConfigError } from "./auth.js";
 import { TOKEN_PATH, CLIENT_SECRET_PATH } from "./constants.js";
 import fs from "node:fs";
+import { createRequire } from "node:module";
+
+// Read the version from package.json rather than repeating it here. A literal
+// in this file silently goes stale on the next release, and the MCP handshake
+// would then advertise a version that doesn't exist. Resolves to the package
+// root from both dist/ (published) and src/ (tsx dev runs).
+const { version } = createRequire(import.meta.url)("../package.json") as { version: string };
 
 const server = new McpServer({
   name: "google-tasks-mcp-server",
-  version: "1.0.0",
+  version,
 });
 
 registerTaskListTools(server);
