@@ -185,7 +185,7 @@ Your `node_modules` was installed on a different OS/architecture than you're run
 Your `client_secret.json` has the wrong client secret in it, usually from copy-pasting it by hand instead of downloading it directly. Go back to Google Cloud Console, add a fresh client secret, download or copy it directly, and update your `client_secret.json`.
 
 **Server exits immediately with "No cached Google Tasks token found"**
-You haven't run `npm run auth` yet, or it didn't finish. Run it before starting the server.
+You haven't authorized yet, or the flow didn't finish. Run `google-tasks-mcp-auth` (npm install) or `npm run auth` (source checkout) before starting the server.
 
 ## Development
 
