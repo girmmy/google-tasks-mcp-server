@@ -1,0 +1,66 @@
+name: Publish to npm
+
+# Publishes via npm trusted publishing (OIDC). There is no NPM_TOKEN and no
+# secret in this repo -- npm verifies the workflow's OIDC identity instead, and
+# generates provenance attestations automatically.
+#
+# Trigger by publishing a GitHub Release whose tag is `v<version>`, matching the
+# version field in package.json.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # required for trusted publishing
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Trusted publishing needs Node >= 22.14.0.
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+
+      # Trusted publishing needs npm >= 11.5.1, newer than the npm bundled with
+      # Node 22, so upgrade the CLI before publishing.
+      - name: Upgrade npm
+        run: npm install -g npm@latest
+
+      - name: Verify npm supports trusted publishing
+        run: |
+          NPM_V=$(npm --version)
+          echo "npm $NPM_V"
+          node -e '
+            const v = process.argv[1].split(".").map(Number);
+            const ok = v[0] > 11 || (v[0] === 11 && (v[1] > 5 || (v[1] === 5 && v[2] >= 1)));
+            if (!ok) { console.error("npm >= 11.5.1 required, got " + process.argv[1]); process.exit(1); }
+          ' "$NPM_V"
+
+      - run: npm ci
+
+      - run: npm run build
+
+      # A release tag that disagrees with package.json publishes the wrong
+      # version under the right tag, which is painful to unpick afterwards.
+      - name: Check tag matches package.json version
+        if: github.event_name == 'release'
+        run: |
+          PKG=$(node -p "require('./package.json').version")
+          TAG="${GITHUB_REF_NAME#v}"
+          if [ "$PKG" != "$TAG" ]; then
+            echo "Tag $GITHUB_REF_NAME implies version $TAG but package.json says $PKG" >&2
+            exit 1
+          fi
+          echo "version $PKG matches tag $GITHUB_REF_NAME"
+
+      - name: Publish
+        run: npm publish
