@@ -30,7 +30,11 @@
     "google-tasks",
     "claude",
     "claude-desktop",
-    "oauth"
+    "oauth",
+    "codex",
+    "cursor",
+    "google-api",
+    "tasks"
   ],
   "scripts": {
     "start": "node dist/index.js",

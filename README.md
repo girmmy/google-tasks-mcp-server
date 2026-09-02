@@ -4,7 +4,7 @@
 [![CI](https://github.com/girmmy/google-tasks-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/girmmy/google-tasks-mcp-server/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-An [MCP](https://modelcontextprotocol.io) server for [Google Tasks](https://tasks.google.com). Gives any MCP client (Claude Desktop, Claude Code, Cursor, etc.) full read/write access to your task lists and tasks: list, create, update, complete, delete, and move them, with real due dates.
+An [MCP](https://modelcontextprotocol.io) server for [Google Tasks](https://tasks.google.com). Gives any MCP client (Claude Desktop, Claude Code, Codex, Cursor, etc.) full read/write access to your task lists and tasks: list, create, update, complete, delete, and move them, with real due dates.
 
 There's no official Google Tasks MCP server, so this covers that. Full CRUD, OAuth installed-app auth flow (your credentials never leave your machine), TypeScript throughout.
 
@@ -157,6 +157,38 @@ Or pointing at a source checkout:
 ```
 
 Omit the `env` block if you saved your client secret at the default `~/.config/...` path. Fully quit and reopen your MCP client afterward.
+
+### Codex
+
+Codex uses TOML rather than JSON. Add this to `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.google-tasks]
+command = "npx"
+args = ["-y", "@girmmy/google-tasks-mcp-server"]
+startup_timeout_sec = 60
+```
+
+Or let the CLI write it for you:
+
+```bash
+codex mcp add google-tasks -- npx -y @girmmy/google-tasks-mcp-server
+```
+
+Raise `startup_timeout_sec` if the first launch times out. A cold `npx` downloads the
+package before the server can answer `initialize`, and Codex's default allowance is short
+enough that this sometimes trips on the first run only.
+
+If your client secret isn't at the default path, add:
+
+```toml
+[mcp_servers.google-tasks.env]
+GOOGLE_TASKS_CLIENT_SECRET = "/absolute/path/to/client_secret.json"
+```
+
+Check it registered with `codex mcp list`. Authorization is the same one-time
+`google-tasks-mcp-auth` step as everywhere else — run it in a normal terminal, not inside
+Codex, since it needs to open a browser and catch a loopback redirect.
 
 ## Environment variables
 

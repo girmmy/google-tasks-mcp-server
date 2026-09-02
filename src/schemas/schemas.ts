@@ -7,10 +7,17 @@ export const responseFormatField = z
   .default(ResponseFormat.MARKDOWN)
   .describe("Output format: 'markdown' for human-readable text or 'json' for machine-readable structured data.");
 
-const rfc3339DateTime = z
-  .string()
-  .refine((v) => !Number.isNaN(Date.parse(v)), "Must be a valid RFC 3339 / ISO 8601 timestamp")
-  .describe("RFC 3339 timestamp, e.g. '2026-09-10T00:00:00Z'");
+// A factory, not a shared instance. zod-to-json-schema deduplicates repeated
+// schema *instances* into `$ref`s pointing at the first occurrence, which drops
+// each field's own .describe() text — `due_max` ended up documented with
+// `due_min`'s description, i.e. exactly inverted. A fresh instance per field
+// keeps the descriptions intact and keeps the emitted schema $ref-free, which
+// strict function-calling validators (OpenAI/Codex) also require.
+const rfc3339DateTime = () =>
+  z
+    .string()
+    .refine((v) => !Number.isNaN(Date.parse(v)), "Must be a valid RFC 3339 / ISO 8601 timestamp")
+    .describe("RFC 3339 timestamp, e.g. '2026-09-10T00:00:00Z'");
 
 export const taskListIdField = z
   .string()
@@ -78,9 +85,9 @@ export const ListTasksInputSchema = z
     show_completed: z.boolean().default(true).describe("Whether to include completed tasks."),
     show_deleted: z.boolean().default(false).describe("Whether to include deleted tasks."),
     show_hidden: z.boolean().default(false).describe("Whether to include hidden (completed + cleared) tasks."),
-    due_min: rfc3339DateTime.optional().describe("Only return tasks due on or after this time."),
-    due_max: rfc3339DateTime.optional().describe("Only return tasks due before this time."),
-    updated_min: rfc3339DateTime.optional().describe("Only return tasks last modified on or after this time."),
+    due_min: rfc3339DateTime().optional().describe("Only return tasks due on or after this time."),
+    due_max: rfc3339DateTime().optional().describe("Only return tasks due before this time."),
+    updated_min: rfc3339DateTime().optional().describe("Only return tasks last modified on or after this time."),
     response_format: responseFormatField,
   })
   .strict();
@@ -100,7 +107,7 @@ export const CreateTaskInputSchema = z
     tasklist_id: taskListIdField,
     title: z.string().min(1).max(1024).describe("Title of the new task."),
     notes: z.string().max(8192).optional().describe("Free-text notes/description for the task."),
-    due: rfc3339DateTime.optional().describe(
+    due: rfc3339DateTime().optional().describe(
       "Due date/time as RFC 3339, e.g. '2026-09-10T00:00:00Z'. Google Tasks only stores the date portion."
     ),
     parent_task_id: z
@@ -123,7 +130,7 @@ export const UpdateTaskInputSchema = z
     title: z.string().min(1).max(1024).optional().describe("New title for the task."),
     notes: z.string().max(8192).optional().describe("New notes/description. Pass an empty string to clear it."),
     due: z
-      .union([rfc3339DateTime, z.literal(null)])
+      .union([rfc3339DateTime(), z.null()])
       .optional()
       .describe("New due date as RFC 3339, or null to clear the due date."),
     status: z
