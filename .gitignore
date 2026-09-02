@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.log
+
+# OAuth secrets and cached tokens — never commit these
+client_secret*.json
+token.json
+credentials/
+.env
