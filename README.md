@@ -3,6 +3,7 @@
 [![npm](https://img.shields.io/npm/v/@girmmy/google-tasks-mcp-server)](https://www.npmjs.com/package/@girmmy/google-tasks-mcp-server)
 [![CI](https://github.com/girmmy/google-tasks-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/girmmy/google-tasks-mcp-server/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Listed on mcpservers.org](https://mcpservers.org/badge.svg)](https://mcpservers.org/servers/girmmy/google-tasks-mcp-server)
 
 An [MCP](https://modelcontextprotocol.io) server for [Google Tasks](https://tasks.google.com). Gives any MCP client (Claude Desktop, Claude Code, Codex, Cursor, etc.) full read/write access to your task lists and tasks: list, create, update, complete, delete, and move them, with real due dates.
 
