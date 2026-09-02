@@ -1,5 +1,9 @@
 # google-tasks-mcp-server
 
+[![npm](https://img.shields.io/npm/v/@girmmy/google-tasks-mcp-server)](https://www.npmjs.com/package/@girmmy/google-tasks-mcp-server)
+[![CI](https://github.com/girmmy/google-tasks-mcp-server/actions/workflows/ci.yml/badge.svg)](https://github.com/girmmy/google-tasks-mcp-server/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 An [MCP](https://modelcontextprotocol.io) server for [Google Tasks](https://tasks.google.com). Gives any MCP client (Claude Desktop, Claude Code, Cursor, etc.) full read/write access to your task lists and tasks: list, create, update, complete, delete, and move them, with real due dates.
 
 There's no official Google Tasks MCP server, so this covers that. Full CRUD, OAuth installed-app auth flow (your credentials never leave your machine), TypeScript throughout.
@@ -27,6 +31,16 @@ Every tool supports `response_format: "markdown" | "json"`.
 
 ## Quick start
 
+From npm:
+
+```bash
+npm install -g @girmmy/google-tasks-mcp-server
+```
+
+Or don't install it at all and let your MCP client run it via `npx` (see [step 4](#4-run-it)).
+
+Or from source:
+
 ```bash
 git clone https://github.com/girmmy/google-tasks-mcp-server.git
 cd google-tasks-mcp-server
@@ -34,7 +48,7 @@ npm install
 npm run build
 ```
 
-Then follow Setup below to create your own Google OAuth credentials and authorize. There's no shared or hosted version of this, it talks directly to your own Google account.
+Either way, follow Setup below to create your own Google OAuth credentials and authorize. There's no shared or hosted version of this, it talks directly to your own Google account.
 
 ## Setup
 
@@ -68,7 +82,15 @@ The file should look like:
 }
 ```
 
-### 2. Install and build
+### 2. Install
+
+From npm (nothing to build):
+
+```bash
+npm install -g @girmmy/google-tasks-mcp-server
+```
+
+From source:
 
 ```bash
 npm install
@@ -76,6 +98,16 @@ npm run build
 ```
 
 ### 3. Authorize (one-time)
+
+If you installed from npm:
+
+```bash
+google-tasks-mcp-auth
+# or without installing anything:
+npx -y -p @girmmy/google-tasks-mcp-server google-tasks-mcp-auth
+```
+
+From source:
 
 ```bash
 npm run auth
@@ -93,7 +125,22 @@ Run this on the same machine and in the same regular terminal you'll actually us
 npm start
 ```
 
-Or wire it into an MCP client. For Claude Desktop / Claude Code, add to your MCP config (usually `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+Or wire it into an MCP client. For Claude Desktop / Claude Code, add to your MCP config (usually `~/Library/Application Support/Claude/claude_desktop_config.json` on macOS).
+
+Using npm, with your client secret at the default `~/.config/...` path, this is the whole config:
+
+```json
+{
+  "mcpServers": {
+    "google-tasks": {
+      "command": "npx",
+      "args": ["-y", "@girmmy/google-tasks-mcp-server"]
+    }
+  }
+}
+```
+
+Or pointing at a source checkout:
 
 ```json
 {

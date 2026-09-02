@@ -1,10 +1,21 @@
 {
-  "name": "google-tasks-mcp-server",
+  "name": "@girmmy/google-tasks-mcp-server",
   "version": "1.0.0",
+  "mcpName": "io.github.girmmy/google-tasks",
   "description": "MCP server for Google Tasks — list, create, update, complete, delete, and move tasks and task lists via the Google Tasks API",
+  "author": "Girmachew Samson (https://github.com/girmmy)",
+  "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
-  "license": "MIT",
+  "bin": {
+    "google-tasks-mcp-server": "dist/index.js",
+    "google-tasks-mcp-auth": "dist/authorize.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/girmmy/google-tasks-mcp-server.git"
@@ -21,18 +32,19 @@
     "claude-desktop",
     "oauth"
   ],
-  "bin": {
-    "google-tasks-mcp-server": "dist/index.js"
-  },
   "scripts": {
     "start": "node dist/index.js",
     "dev": "tsx watch src/index.ts",
-    "build": "tsc && chmod +x dist/index.js",
+    "build": "tsc && chmod +x dist/index.js dist/authorize.js",
     "clean": "rm -rf dist",
-    "auth": "tsx src/authorize.ts"
+    "auth": "tsx src/authorize.ts",
+    "prepublishOnly": "npm run clean && npm run build"
   },
   "engines": {
     "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.1",

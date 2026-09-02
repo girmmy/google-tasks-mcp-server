@@ -2,7 +2,8 @@
 /**
  * One-time interactive OAuth authorization flow for Google Tasks.
  *
- * Run with `npm run auth`. Opens (or prints) a Google consent URL, starts a
+ * Run with `npm run auth` (or `npx -y -p @girmmy/google-tasks-mcp-server google-tasks-mcp-auth`).
+ * Opens (or prints) a Google consent URL, starts a
  * short-lived local server to catch the OAuth redirect on localhost, exchanges
  * the returned code for tokens, and caches them to disk (see constants.ts:TOKEN_PATH)
  * for the MCP server to use on every subsequent run.
@@ -92,13 +93,13 @@ async function main(): Promise<void> {
   if (!tokens.refresh_token) {
     console.warn(
       "\nWarning: no refresh_token was returned. If you've authorized this app before, " +
-        "revoke access at https://myaccount.google.com/permissions and re-run `npm run auth`."
+        "revoke access at https://myaccount.google.com/permissions and authorize again."
     );
   }
   saveToken(tokens);
 
   console.log(`\nAuthorization complete. Token cached to ${TOKEN_PATH}.`);
-  console.log("You can now run the MCP server (npm run build && npm start).");
+  console.log("You can now start the MCP server, or point your MCP client at it.");
 }
 
 main().catch((err) => {
