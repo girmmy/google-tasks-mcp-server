@@ -18,13 +18,31 @@ function getTasksApi(): tasks_v1.Tasks {
 export function describeApiError(error: unknown): string {
   if (error instanceof GaxiosError) {
     const status = error.response?.status;
-    const apiMessage =
-      (error.response?.data as { error?: { message?: string } } | undefined)?.error?.message;
+    const data = error.response?.data as
+      | { error?: string | { message?: string }; error_description?: string }
+      | undefined;
+    const apiMessage = typeof data?.error === "object" ? data.error.message : undefined;
+
+    // A dead refresh token comes back from Google's OAuth endpoint as
+    // 400 {"error":"invalid_grant"} -- a plain string, not the Tasks API's
+    // {error:{message}} shape -- so it would otherwise surface as a bare
+    // "Invalid request (400)" with no hint that re-authorizing fixes it.
+    // OAuth clients left in "Testing" mode hit this every 7 days.
+    if (data?.error === "invalid_grant") {
+      return (
+        "Error: Your Google authorization has expired or was revoked" +
+        (data.error_description ? ` (${data.error_description})` : "") +
+        ". Re-authorize by running `google-tasks-mcp-auth` (npm install) or `npm run auth` " +
+        "(source checkout). If this recurs weekly, your OAuth consent screen is in Testing mode, " +
+        "where Google expires refresh tokens after 7 days -- publish it to Production to stop that."
+      );
+    }
+
     switch (status) {
       case 401:
         return (
           "Error: Google rejected the credentials (401). The cached token may be expired or revoked. " +
-          "Run `npm run auth` again to re-authorize."
+          "Re-authorize with `google-tasks-mcp-auth` (npm install) or `npm run auth` (source checkout)."
         );
       case 403:
         return (
