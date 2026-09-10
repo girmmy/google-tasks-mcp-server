@@ -1,15 +1,35 @@
+import fs from "node:fs";
 import { google, tasks_v1 } from "googleapis";
 import { GaxiosError } from "gaxios";
 import { getAuthorizedClient } from "../auth.js";
+import { TOKEN_PATH } from "../constants.js";
 import type { TaskListSummary, TaskSummary } from "../types.js";
 
 let cachedClient: tasks_v1.Tasks | null = null;
+let cachedTokenMtimeMs: number | null = null;
 
-/** Lazily builds (and caches) the authorized Google Tasks API client for this process. */
+function tokenMtimeMs(): number | null {
+  try {
+    return fs.statSync(TOKEN_PATH).mtimeMs;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Returns the authorized Google Tasks API client, rebuilding it whenever token.json has
+ * changed on disk since it was built. MCP clients keep this process alive for days, so
+ * without the check a re-authorization (e.g. after Google expires the refresh token) had
+ * no effect until the whole client app was restarted -- the server kept retrying the dead
+ * token it loaded at startup. One stat per call is cheap next to the API round trip. Our
+ * own refresh writes also bump the mtime; that just costs one rebuild from a fresh token.
+ */
 function getTasksApi(): tasks_v1.Tasks {
-  if (!cachedClient) {
+  const mtime = tokenMtimeMs();
+  if (!cachedClient || mtime !== cachedTokenMtimeMs) {
     const auth = getAuthorizedClient();
     cachedClient = google.tasks({ version: "v1", auth });
+    cachedTokenMtimeMs = mtime;
   }
   return cachedClient;
 }
@@ -33,7 +53,8 @@ export function describeApiError(error: unknown): string {
         "Error: Your Google authorization has expired or was revoked" +
         (data.error_description ? ` (${data.error_description})` : "") +
         ". Re-authorize by running `google-tasks-mcp-auth` (npm install) or `npm run auth` " +
-        "(source checkout). If this recurs weekly, your OAuth consent screen is in Testing mode, " +
+        "(source checkout); the server picks up the new token on its next call, no restart needed. " +
+        "If this recurs weekly, your OAuth consent screen is in Testing mode, " +
         "where Google expires refresh tokens after 7 days -- publish it to Production to stop that."
       );
     }

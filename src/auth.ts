@@ -47,7 +47,8 @@ function loadToken(): StoredToken {
   if (!fs.existsSync(TOKEN_PATH)) {
     throw new AuthConfigError(
       `No cached Google Tasks token found at ${TOKEN_PATH}.\n` +
-        "Run `npm run auth` once to complete the OAuth consent flow and cache a token."
+        "Run `google-tasks-mcp-auth` (npm install) or `npm run auth` (source checkout) once to " +
+        "complete the OAuth consent flow and cache a token."
     );
   }
   return readJson<StoredToken>(TOKEN_PATH);
